@@ -15,6 +15,7 @@ export interface TrixEditorProps {
     uploadData?: {
         [key: string]: string;
     };
+    bc?: any;
     mergeTags: Array<MergeTags>;
     onEditorReady?: (editor: any) => void;
     onChange: (html: string, text: string) => void;
@@ -49,6 +50,7 @@ export declare class TrixEditor extends React.Component<TrixEditorProps, TrixEdi
     componentWillUnmount(): void;
     private handleChange;
     private handleUpload;
+    private uploadAttachmentBC;
     private uploadAttachment;
     private handleTagSelected;
     private renderTagSelector;

@@ -17,6 +17,7 @@ export interface TrixEditorProps {
   value?: string;
   uploadURL?: string;
   uploadData?: { [key: string]: string };
+  bc?: any;
 
   /* list of available merge tag */
   mergeTags: Array<MergeTags>;
@@ -94,8 +95,7 @@ export class TrixEditor extends React.Component<TrixEditorProps, TrixEditorState
         }
       }, false);
       this.container.addEventListener('trix-change', this.handleChange.bind(this), false);
-
-      if (props.uploadURL) {
+      if (props.uploadURL || props.bc) {
         this.container.addEventListener("trix-attachment-add", this.handleUpload.bind(this));
       }
     } else {
@@ -144,8 +144,34 @@ export class TrixEditor extends React.Component<TrixEditorProps, TrixEditorState
   private handleUpload(e: any) {
     var attachment = e.attachment;
     if (attachment.file) {
-      return this.uploadAttachment(attachment);
+      return this.uploadAttachmentBC(attachment);
     }
+  }
+  private uploadAttachmentBC(attachment: any) {
+    var file, form, xhr, filename;
+    file = attachment.file;
+    filename = file.name;
+    form = new FormData();
+    // add any custom data that were passed
+    if (this.props.uploadData) {
+      for (var k in this.props.uploadData) {
+        form[k] = this.props.uploadData[k];
+      }
+    }
+    return this.props.bc.file.upload(filename, file)
+      .then((data) => {
+        // 上传成功
+        console.log(data.url);
+        var url, href;
+        url = href = data.url;
+        return attachment.setAttributes({
+          url: url,
+          href: href
+        });
+      })
+      .catch((error) => {
+        // 调用失败，进行错误处理
+      });
   }
   private uploadAttachment(attachment: any) {
     var file, form, xhr;
@@ -193,7 +219,7 @@ export class TrixEditor extends React.Component<TrixEditorProps, TrixEditorState
     }
 
     const editorPosition = document.getElementById("trix-editor-top-level").getBoundingClientRect();
-    
+
     // current cursor position
     const rect = this.editor.getClientRectAtPosition(this.editor.getSelectedRange()[0]);
     const boxStyle = {
@@ -209,7 +235,7 @@ export class TrixEditor extends React.Component<TrixEditorProps, TrixEditorState
       "background": "linear-gradient(to bottom right, white, hsla(0,0%,100%,.8))",
       "border": "1px solid rgba(0,0,0,.3)",
       "boxShadow": ".05em .2em .6em rgba(0,0,0,.2)",
-	    "textShadow": "none"
+      "textShadow": "none"
     };
     const tagStyle = {
       "display": "block",
@@ -218,9 +244,9 @@ export class TrixEditor extends React.Component<TrixEditorProps, TrixEditorState
     }
     return (
       <div style={boxStyle} className="react-trix-suggestions">
-        {tags.map((t) => {
-          return <a key={t.name} style={tagStyle} href="#" onClick={this.handleTagSelected.bind(this, t)}>{t.name}</a>
-        })}
+      {tags.map((t) => {
+        return <a key={t.name} style={tagStyle} href="#" onClick={this.handleTagSelected.bind(this, t)}>{t.name}</a>
+      })}
       </div>
     );
   }
